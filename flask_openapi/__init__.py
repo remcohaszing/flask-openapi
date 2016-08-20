@@ -195,11 +195,12 @@ class OpenAPI:
 
     def tag(self, *tags):
         """
-        A decorator to validate a request using a `JSON schema`_.
+        Tag an operation using one or more tags.
+
+        These tags are exposed through the OpenAPI operation object.
 
         Args:
-            schema (dict|str): Either a dict to use as a schema directly
-                or a named schema. (See `add_definition`.)
+            *tags (str): The tags to apply to the operation.
 
         """
         def wrapper(fn):
