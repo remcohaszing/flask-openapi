@@ -1,5 +1,17 @@
-__pycache__
+# Python cache files
+__pycache__/
 *.py[co]
-.cache/
+
+# Setuptools
+/build/
+/dist/
 *.egg-info/
+
+# Tox
+/.tox/
+
+# Pytest
+.cache/
+
+# Sphinx
 /docs/_build/
