@@ -53,6 +53,23 @@ def app(request):
     ({
         'OPENAPI_INFO_TITLE': 'test',
         'OPENAPI_INFO_VERSION': '0.0.0',
+        'OPENAPI_INFO_CONTACT': (
+            'Remco Haszing'
+            ' <remcohaszing@gmail.com>'
+            ' (https://github.com/remcohaszing)'
+        )
+    }, {
+        'title': 'test',
+        'version': '0.0.0',
+        'contact': {
+            'name': 'Remco Haszing',
+            'url': 'https://github.com/remcohaszing',
+            'email': 'remcohaszing@gmail.com'
+        }
+    }),
+    ({
+        'OPENAPI_INFO_TITLE': 'test',
+        'OPENAPI_INFO_VERSION': '0.0.0',
         'OPENAPI_INFO_CONTACT': {
             'name': 'Remco Haszing',
             'url': 'https://github.com/remcohaszing',

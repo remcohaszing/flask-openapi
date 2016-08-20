@@ -1,3 +1,5 @@
+import re
+
 from werkzeug.routing import parse_rule
 
 
@@ -14,6 +16,25 @@ WERKZEUG_URL_SWAGGER_TYPE_MAP = {
     'any': 'string',
     'uuid': 'string'
 }
+
+
+#: This regular expression can be used to extract a name, email and url
+#: from a string in the form::
+#:
+#:     name <email> (url)
+AUTHOR_REGEX = re.compile(r"""
+    ^[\s]*
+    (?P<name>[^<(]+?)?        # name
+    [\s]*
+    (?:                       # optional
+        <(?P<email>[^>(]+?)>  # <email>
+    )?
+    [\s]*
+    (?:                       # optional
+        \((?P<url>[^)]+?)\)   # (url)
+    )?
+    [\s]*$
+    """, re.VERBOSE)
 
 
 def add_optional(data, key, value):
@@ -56,3 +77,30 @@ def parse_werkzeug_url(url):
             'type': WERKZEUG_URL_SWAGGER_TYPE_MAP[typ]
         })
     return path, parameters
+
+
+def parse_contact_string(string):
+    """
+    Convert a contact string to a matching dict.
+
+    The contact string must be in the format::
+
+        name <email> (url)
+
+    *email* and *url* are optional.
+
+    Args:
+        string (str): The string to extract the contact information from.
+
+    Returns:
+        dict: A dict which holds the extracted contact information.
+
+    """
+    match = AUTHOR_REGEX.match(string)
+    result = {}
+    if not match:
+        return
+    add_optional(result, 'name', match.group('name'))
+    add_optional(result, 'email', match.group('email'))
+    add_optional(result, 'url', match.group('url'))
+    return result

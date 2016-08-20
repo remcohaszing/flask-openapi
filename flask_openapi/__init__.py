@@ -13,6 +13,7 @@ from flask import jsonify
 from flask import request
 
 from flask_openapi.utils import add_optional
+from flask_openapi.utils import parse_contact_string
 from flask_openapi.utils import parse_werkzeug_url
 from flask_openapi.validators import OpenAPISchemaValidator
 
@@ -97,7 +98,10 @@ class OpenAPI:
             data,
             'termsOfService',
             self._config('info_terms_of_service'))
-        add_optional(data, 'contact', self._config('info_contact'))
+        contact = self._config('info_contact')
+        if isinstance(contact, str):
+            contact = parse_contact_string(contact)
+        add_optional(data, 'contact', contact)
         add_optional(data, 'license', self._config('info_license'))
         return data
 
