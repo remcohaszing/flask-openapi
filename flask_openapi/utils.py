@@ -6,7 +6,7 @@ from werkzeug.routing import parse_rule
 #: See http://flask.pocoo.org/docs/0.11/quickstart/#variable-rules and
 #: http://swagger.io/specification/#dataTypeFormat for details.
 WERKZEUG_URL_SWAGGER_TYPE_MAP = {
-    None: 'string',
+    'default': 'string',  # 'default' is returned if no type is specified.
     'string': 'string',
     'int': 'integer',
     'float': 'number',
@@ -53,6 +53,6 @@ def parse_werkzeug_url(url):
             'name': segment,
             'in': 'path',
             'required': True,
-            'type': WERKZEUG_URL_SWAGGER_TYPE_MAP.get(typ)
+            'type': WERKZEUG_URL_SWAGGER_TYPE_MAP[typ]
         })
     return path, parameters

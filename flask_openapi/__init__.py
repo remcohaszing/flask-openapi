@@ -32,6 +32,7 @@ class UnknownDefinitionError(Exception):
 
 
 _DEFAULT_CONFIG = {
+    'OPENAPI_BASE_PATH': None,
     'OPENAPI_INFO_TITLE': None,
     'OPENAPI_INFO_DESCRIPTION': None,
     'OPENAPI_INFO_TERMS_OF_SERVICE': None,
@@ -91,10 +92,13 @@ class OpenAPI:
             'title': self._config('info_title'),
             'version': self._config('info_version')
         }
-        add_optional(data, 'description', self._config('description'))
-        add_optional(data, 'termsOfService', self._config('terms_of_service'))
-        add_optional(data, 'contact', self._config('contact'))
-        add_optional(data, 'license', self._config('license'))
+        add_optional(data, 'description', self._config('info_description'))
+        add_optional(
+            data,
+            'termsOfService',
+            self._config('info_terms_of_service'))
+        add_optional(data, 'contact', self._config('info_contact'))
+        add_optional(data, 'license', self._config('info_license'))
         return data
 
     @property
@@ -110,8 +114,11 @@ class OpenAPI:
 
     @property
     def base_path(self):
-        ...
-        # Not implemented
+        """
+        str: The relative URL prefix for all API calls.
+
+        """
+        return self._config('base_path')
 
     @property
     def schemes(self):
@@ -121,6 +128,10 @@ class OpenAPI:
 
     @property
     def tags(self):
+        """
+        list: A list of tag descriptions.
+
+        """
         if self._tags:
             return sorted(self._tags.values(), key=lambda x: x['name'])
 
@@ -155,13 +166,6 @@ class OpenAPI:
             raise UnnamedDefinitionError(title)
         self._definitions[title] = definition
 
-    def add_definitions(self, files):
-        for f in files:
-            if isinstance(f, tuple):
-                self.add_definition(*f)
-            else:
-                self.add_definition(f)
-
     def schema(self, schema):
         """
         A decorator to validate a request using a `JSON schema`_.
@@ -176,10 +180,11 @@ class OpenAPI:
 
             @functools.wraps(fn)
             def inner(*args, **kwargs):
-                if isinstance(fn.schema, str):
-                    schema = self._definitions[fn.schema]
+                schema = fn.schema
+                if isinstance(schema, str):
+                    schema = self._definitions[schema]
                 validator = self._validatorgetter(schema)
-                validator.validate(request.json())
+                validator.validate(request.json)
                 return fn(*args, **kwargs)
             return inner
         return wrapper

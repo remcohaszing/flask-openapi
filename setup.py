@@ -10,6 +10,7 @@ setup(
     author_email='remcohaszing@gmail.com',
     packages=find_packages(),
     install_requires=[
-        'flask ~= 0.11.0'
+        'flask ~= 0.11.0',
+        'jsonschema ~= 2.5.1'
     ],
     zip_safe=True)
