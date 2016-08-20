@@ -4,6 +4,7 @@ Tests for `flask_openapi`.
 """
 from pathlib import Path
 from unittest.mock import ANY
+from unittest.mock import call
 
 import pytest
 import yaml
@@ -173,6 +174,7 @@ def test_paths(app):
 
     @app.route('/pokemon/<id>')
     @openapi.tag('get', 'pokemon')
+    @openapi.deprecated
     def get_one_pokemon():
         ...
 
@@ -212,6 +214,7 @@ def test_paths(app):
         },
         '/pokemon/{id}': {
             'get': {
+                'deprecated': True,
                 'responses': {
                     '200': {
                         'description': 'OK'
@@ -382,3 +385,44 @@ def test_schema_validation_unnamed(app, client):
     }
     with pytest.raises(ValidationError):
         client.post('/', data='{}')
+
+
+def test_deprecated_warn(app, client, mocker):
+    """
+    Test if deprecated issues a warning if ``OPENAPI_WARN_DEPRECATED`` is warn.
+
+    """
+    warn = mocker.patch('warnings.warn')
+    app.config['OPENAPI_WARN_DEPRECATED'] = 'warn'
+    openapi = OpenAPI(app)
+
+    @app.route('/')
+    @openapi.deprecated
+    def handler():
+        return ''
+    assert handler.deprecated
+    client.get('/')
+    assert warn.call_args == call(
+        'Called deprecated GET http://localhost/',
+        DeprecationWarning)
+
+
+def test_deprecated_log(app, client, mocker):
+    """
+    Test if deprecated logs a warning if ``OPENAPI_WARN_DEPRECATED`` is log.
+
+    """
+    warning = mocker.patch('logging.Logger.warning')
+    app.config['OPENAPI_WARN_DEPRECATED'] = 'log'
+    openapi = OpenAPI(app)
+
+    @app.route('/')
+    @openapi.deprecated
+    def handler():
+        return ''
+    assert handler.deprecated
+    client.get('/')
+    assert warning.call_args == call(
+        'Called deprecated %s %s',
+        'GET',
+        'http://localhost/')

@@ -5,6 +5,7 @@
 import functools
 import inspect
 import logging
+import warnings
 from contextlib import suppress
 from pathlib import Path
 
@@ -32,6 +33,9 @@ class UnknownDefinitionError(Exception):
     ...
 
 
+_DEPRECATION_MESSAGE = 'Called deprecated %s %s'
+
+
 _DEFAULT_CONFIG = {
     'OPENAPI_BASE_PATH': None,
     'OPENAPI_INFO_TITLE': None,
@@ -41,7 +45,8 @@ _DEFAULT_CONFIG = {
     'OPENAPI_INFO_LICENSE': None,
     'OPENAPI_INFO_VERSION': None,
     'OPENAPI_SHOW_HOST': False,
-    'OPENAPI_SWAGGER_JSON_URL': '/swagger.json'
+    'OPENAPI_SWAGGER_JSON_URL': '/swagger.json',
+    'OPENAPI_WARN_DEPRECATED': 'warn'
 }
 
 
@@ -215,6 +220,30 @@ class OpenAPI:
             return fn
         return wrapper
 
+    def deprecated(self, fn):
+        """
+        Mark an operation as deprecated.
+
+        This will be exposed through the OpenAPI operation object.
+        Additionally a warning will be emitted when the API is used.
+        This can be configured using the ``OPENAPI_WARN_DEPRECATED``
+        configuration option. This must be one of ``warn`` or ``log``.
+
+        """
+        fn.deprecated = True
+
+        @functools.wraps(fn)
+        def call_deprecated(*args, **kwargs):
+            method = self._config('warn_deprecated')
+            log_args = request.method, request.url
+            if method == 'warn':
+                warnings.warn(_DEPRECATION_MESSAGE % log_args,
+                              DeprecationWarning)
+            else:
+                log.warning(_DEPRECATION_MESSAGE, *log_args)
+            return fn(*args, **kwargs)
+        return call_deprecated
+
     def validatorgetter(self, fn):
         """
         Mark a function as a getter function to get a validator.
@@ -245,6 +274,10 @@ class OpenAPI:
                 'schema': schema
             }]
         add_optional(path, 'description', self._extract_description(view_func))
+        add_optional(
+            path,
+            'deprecated',
+            getattr(view_func, 'deprecated', None))
         with suppress(AttributeError):
             path['tags'] = sorted(view_func.tags)
         return path
