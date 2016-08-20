@@ -2,3 +2,4 @@ __pycache__
 *.py[co]
 .cache/
 *.egg-info/
+/docs/_build/
