@@ -38,7 +38,15 @@ class UnnamedDefinitionError(Exception):
 
 
 class UnknownDefinitionError(Exception):
-    ...
+    """
+    Raised when trying to get a definition which doesn't exist.
+
+    """
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return '{0.__class__.__name__}({0.name})'.format(self)
 
 
 _DEPRECATION_MESSAGE = 'Called deprecated %s %s'

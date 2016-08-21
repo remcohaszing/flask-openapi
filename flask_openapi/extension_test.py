@@ -13,6 +13,7 @@ from flask import Flask
 from jsonschema.exceptions import ValidationError
 
 from flask_openapi import OpenAPI
+from flask_openapi.extension import UnknownDefinitionError
 from flask_openapi.extension import UnnamedDefinitionError
 
 
@@ -294,6 +295,23 @@ def test_paths(app):
             }
         }
     }
+
+
+def test_paths_missing_definition(app):
+    """
+    Test if a missing definition raises an error.
+
+    """
+    openapi = OpenAPI(app)
+
+    @app.route('/', methods=['POST'])
+    @openapi.schema('Missing')
+    def handler():
+        ...
+
+    with pytest.raises(UnknownDefinitionError) as e:
+        openapi.paths
+    assert str(e.value) == 'UnknownDefinitionError(Missing)'
 
 
 def test_add_definition_explicit_title():
