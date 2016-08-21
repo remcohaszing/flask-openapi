@@ -170,6 +170,15 @@ def test_tags():
     ]
 
 
+def test_no_tags():
+    """
+    Test if not tags result in None.
+
+    """
+    openapi = OpenAPI()
+    assert openapi.tags is None
+
+
 def test_paths(app):
     """
     Test if paths are generated from Flask routes and openapi decorators.
