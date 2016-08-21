@@ -89,6 +89,7 @@ def test_parse_werkzeug_url(url, path, parameters):
         'name': 'Birch',
         'url': 'http://littleroottown.hoenn/birch'
     }),
+    ('<>', {}),
     ('', {})
 ])
 def test_parse_contact_string(input, expected):
