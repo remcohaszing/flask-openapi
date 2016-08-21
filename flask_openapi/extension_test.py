@@ -5,6 +5,7 @@ Tests for `flask_openapi`.
 from pathlib import Path
 from unittest.mock import ANY
 from unittest.mock import call
+from unittest.mock import Mock
 
 import pytest
 import yaml
@@ -375,20 +376,21 @@ def test_schema_validation_named(app, client):
 
     """
     openapi = OpenAPI(app)
-
     openapi.add_definition({
         'type': 'object',
         'required': ['spam']
     }, 'Spam')
+    mock = Mock()
 
     @app.route('/', methods=['post'])
     @openapi.schema('Spam')
     def handler():
-        ...
+        mock()
 
     assert handler.schema == 'Spam'
     with pytest.raises(ValidationError):
-        client.post('/', data='{}')
+        client.post('/', content_type='application/json', data='{}')
+    assert not mock.called
 
 
 def test_schema_validation_unnamed(app, client):
@@ -397,6 +399,7 @@ def test_schema_validation_unnamed(app, client):
 
     """
     openapi = OpenAPI(app)
+    mock = Mock()
 
     @app.route('/', methods=['post'])
     @openapi.schema({
@@ -404,14 +407,36 @@ def test_schema_validation_unnamed(app, client):
         'required': ['spam']
     })
     def handler():
-        ...
+        mock()
 
     assert handler.schema == {
         'type': 'object',
         'required': ['spam']
     }
     with pytest.raises(ValidationError):
-        client.post('/', data='{}')
+        client.post('/', content_type='application/json', data='{}')
+    assert not mock.called
+
+
+def test_schema_validation_ok(app, client):
+    """
+    Test if a handler is called when the input passes the schema.
+
+    """
+    openapi = OpenAPI(app)
+    mock = Mock()
+
+    @app.route('/', methods=['post'])
+    @openapi.schema({
+        'type': 'object',
+        'required': ['spam']
+    })
+    def handler():
+        mock()
+        return ''
+
+    client.post('/', content_type='application/json', data='{"spam": "bacon"}')
+    assert mock.called
 
 
 def test_deprecated_warn(app, client, mocker):
