@@ -1,0 +1,9 @@
+title: Beer
+type: object
+properties:
+  name:
+    type: string
+    description: The name of the beer.
+  category:
+    type: string
+    description: The category of the beer.
