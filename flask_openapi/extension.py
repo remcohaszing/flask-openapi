@@ -95,7 +95,7 @@ class OpenAPI:
     @property
     def info(self):
         data = {
-            'title': self._config('info_title'),
+            'title': self._config('info_title') or self.app.name,
             'version': self._config('info_version')
         }
         add_optional(data, 'description', self._config('info_description'))
