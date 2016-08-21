@@ -26,7 +26,15 @@ log.setLevel(logging.DEBUG)
 
 
 class UnnamedDefinitionError(Exception):
-    ...
+    """
+    Raised when trying to add a definition which has no title.
+
+    """
+    def __init__(self, definition):
+        self.definition = definition
+
+    def __str__(self):
+        return '{0.__class__.__name__}({0.definition!r})'.format(self)
 
 
 class UnknownDefinitionError(Exception):
@@ -172,7 +180,7 @@ class OpenAPI:
         if not title:
             title = definition.get('title')
         if not title:
-            raise UnnamedDefinitionError(title)
+            raise UnnamedDefinitionError(definition)
         self._definitions[title] = definition
 
     def schema(self, schema):

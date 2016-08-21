@@ -12,6 +12,7 @@ from flask import Flask
 from jsonschema.exceptions import ValidationError
 
 from flask_openapi import OpenAPI
+from flask_openapi.extension import UnnamedDefinitionError
 
 
 @pytest.fixture
@@ -130,6 +131,21 @@ def test_base_path(app):
     app.config['OPENAPI_BASE_PATH'] = '/v1'
     openapi = OpenAPI(app)
     assert openapi.base_path == '/v1'
+
+
+@pytest.mark.parametrize('scheme,expected', [
+    (None, None),
+    ('http', ['http']),
+    ('https', ['https'])
+])
+def test_schemes(app, scheme, expected):
+    """
+    Test if the preferred scheme is read from the Flask config.
+
+    """
+    app.config['PREFERRED_URL_SCHEME'] = scheme
+    openapi = OpenAPI(app)
+    assert openapi.schemes == expected
 
 
 def test_tags():
@@ -323,6 +339,17 @@ def test_add_definition_from_filename(tmpdir):
             'type': 'object'
         }
     }
+
+
+def test_add_definition_unnamed(tmpdir):
+    """
+    Test if adding an unnamed schema definition raises an error.
+
+    """
+    openapi = OpenAPI()
+    with pytest.raises(UnnamedDefinitionError) as e:
+        openapi.add_definition({'type': 'object'})
+    assert str(e.value) == "UnnamedDefinitionError({'type': 'object'})"
 
 
 def test_add_definition_from_path(tmpdir):
