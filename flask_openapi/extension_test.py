@@ -323,6 +323,15 @@ def test_paths_missing_definition(app):
     assert str(e.value) == 'UnknownDefinitionError(Missing)'
 
 
+def test_no_definitions():
+    """
+    Test if an empty definitions object results in None.
+
+    """
+    openapi = OpenAPI()
+    assert openapi.definitions is None
+
+
 def test_add_definition_explicit_title():
     """
     Test if a title can be specified to name a model.
