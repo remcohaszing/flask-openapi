@@ -439,6 +439,27 @@ def test_schema_validation_ok(app, client):
     assert mock.called
 
 
+def test_custom_validator_getter(app, client):
+    """
+    Test if a custom validationgetter can be set using a decorator.
+
+    """
+    openapi = OpenAPI(app)
+    mock = Mock()
+
+    @openapi.validatorgetter
+    def get_validator(schema):
+        return mock(schema)
+
+    @app.route('/', methods=['POST'])
+    @openapi.schema({'type': 'object'})
+    def handler():
+        return ''
+    client.post('/', content_type='application/json', data='{}')
+    assert mock.call_args == call({'type': 'object'})
+    assert mock.return_value.validate.call_args == call({})
+
+
 def test_deprecated_warn(app, client, mocker):
     """
     Test if deprecated issues a warning if ``OPENAPI_WARN_DEPRECATED`` is warn.
