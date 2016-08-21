@@ -9,6 +9,7 @@ from flask_openapi import utils
 
 @pytest.mark.parametrize('data,key,value,expected', [
     ({}, 'foo', None, {}),
+    ({}, 'foo', {}, {}),
     ({}, 'foo', 'bar', {'foo': 'bar'})
 ])
 def test_add_optional(data, key, value, expected):
@@ -88,6 +89,7 @@ def test_parse_werkzeug_url(url, path, parameters):
         'name': 'Birch',
         'url': 'http://littleroottown.hoenn/birch'
     }),
+    ('', {})
 ])
 def test_parse_contact_string(input, expected):
     """

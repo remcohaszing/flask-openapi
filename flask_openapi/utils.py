@@ -47,7 +47,7 @@ def add_optional(data, key, value):
         value: The value to assign if it's not None.
 
     """
-    if value is not None:
+    if value not in (None, {}):
         data[key] = value
 
 
@@ -98,9 +98,8 @@ def parse_contact_string(string):
     """
     match = AUTHOR_REGEX.match(string)
     result = {}
-    if not match:
-        return
-    add_optional(result, 'name', match.group('name'))
-    add_optional(result, 'email', match.group('email'))
-    add_optional(result, 'url', match.group('url'))
+    if match:
+        add_optional(result, 'name', match.group('name'))
+        add_optional(result, 'email', match.group('email'))
+        add_optional(result, 'url', match.group('url'))
     return result
