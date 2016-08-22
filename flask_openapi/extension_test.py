@@ -28,6 +28,58 @@ def app(request):
     return app
 
 
+def test_swagger_handler(app, client):
+    """
+    Test if the handler returns the swagger dict as a JSON response.
+
+    """
+    openapi = OpenAPI(app)
+    response = client.get('/swagger.json')
+    assert response.content_type == 'application/json'
+    assert response.json == openapi.swagger
+
+
+def test_swagger_minimal(app):
+    """
+    Test a swagger config for a minimal setup.
+
+    """
+    app.config['OPENAPI_INFO_VERSION'] = '1.2.3'
+    openapi = OpenAPI(app)
+    assert openapi.swagger == {
+        'swagger': '2.0',
+        'info': {
+            'title': 'test_swagger_minimal',
+            'version': '1.2.3'
+        },
+        'paths': ANY,
+        'schemes': ['http'],
+    }
+
+
+def test_swagger_full(app):
+    """
+    Test a swagger config for a fully configured setup.
+
+    """
+    app.config.update(
+        SERVER_NAME='api.example.com',
+        OPENAPI_SHOW_HOST=True,
+        OPENAPI_INFO_VERSION='1.2.3'
+    )
+    openapi = OpenAPI(app)
+    assert openapi.swagger == {
+        'swagger': '2.0',
+        'info': {
+            'title': 'test_swagger_full',
+            'version': '1.2.3'
+        },
+        'paths': ANY,
+        'host': 'api.example.com',
+        'schemes': ['http']
+    }
+
+
 @pytest.mark.parametrize('config,expected', [
     ({
         'OPENAPI_INFO_TITLE': 'test',
