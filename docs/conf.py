@@ -12,6 +12,10 @@ default_role = 'any'
 html_theme = 'sphinx_rtd_theme'
 master_doc = 'index'
 nitpicky = True
+nitpick_ignore = [
+    # This is an undocumented class by JSON schema.
+    ('py:class', 'Validator')
+]
 
 extlinks = dict(
     swagger=('http://swagger.io/specification/#%sObject', 'Swagger ')
