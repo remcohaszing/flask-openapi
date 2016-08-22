@@ -67,6 +67,10 @@ _DEFAULT_CONFIG = {
 
 
 class OpenAPI:
+    """
+    The Flask extension that handles all magic.
+
+    """
     def __init__(self, app=None):
         self._definitions = {}
         self._tags = {}
@@ -84,7 +88,7 @@ class OpenAPI:
 
     def swagger_handler(self):
         """
-        Get `swagger.json` as a JSON response.
+        Get `swagger` as a JSON response.
 
         """
         return jsonify(self.swagger)
@@ -92,7 +96,7 @@ class OpenAPI:
     @property
     def swagger(self):
         """
-        dict: The resulting `swagger.json` data.
+        The top level :swagger:`swagger`.
 
         """
         data = {
@@ -110,6 +114,10 @@ class OpenAPI:
 
     @property
     def info(self):
+        """
+        The top level :swagger:`info`.
+
+        """
         data = {
             'title': self._config('info_title') or self.app.name,
             'version': self._config('info_version')
@@ -129,9 +137,11 @@ class OpenAPI:
     @property
     def host(self):
         """
-        str: The server host name.
+        `str`: The server host name.
 
         This is only returned if ``show_host`` is `True`.
+
+        See :swagger:`swagger` for details.
 
         """
         if self._config('show_host'):
@@ -140,13 +150,21 @@ class OpenAPI:
     @property
     def base_path(self):
         """
-        str: The relative URL prefix for all API calls.
+        `str`: The relative URL prefix for all API calls.
+
+        See :swagger:`basePath` for details.
 
         """
         return self._config('base_path')
 
     @property
     def schemes(self):
+        """
+        `list`: The supported schemes for all API calls.
+
+        See :swagger:`schemes` for details.
+
+        """
         scheme = self.app.config.get('PREFERRED_URL_SCHEME')
         if scheme:
             return [scheme]
@@ -154,7 +172,9 @@ class OpenAPI:
     @property
     def tags(self):
         """
-        list: A list of tag descriptions.
+        :class:`dict`: A list of tag descriptions.
+
+        See :swagger:`tag`.
 
         """
         if self._tags:
@@ -162,6 +182,10 @@ class OpenAPI:
 
     @property
     def paths(self):
+        """
+        :class:`dict`: The top level :swagger:`paths`.
+
+        """
         paths = {}
         for rule in self.app.url_map.iter_rules():
             log.info('Processing %r', rule)
@@ -178,26 +202,42 @@ class OpenAPI:
 
     @property
     def definitions(self):
+        """
+        :class:`dict`: The top level :swagger:`definitions`.
+
+        """
         if self._definitions:
             return self._definitions
 
-    def add_definition(self, definition, title=None):
+    def add_definition(self, definition, name=None):
+        """
+        Add a new named definition.
+
+        Args:
+            definition: A :class:`dict` describing a :swagger:`schema`.
+                This may also be a `str` or `pathlib.Path` referring to
+                a file to read.
+            name (str): A name for the schema. If this is not specified,
+                the title of the schema definition will be used.
+
+        """
         if isinstance(definition, (str, Path)):
             with open(str(definition)) as f:
                 definition = yaml.load(f)
-        if not title:
-            title = definition.get('title')
-        if not title:
+        if not name:
+            name = definition.get('name')
+        if not name:
             raise UnnamedDefinitionError(definition)
-        self._definitions[title] = definition
+        self._definitions[name] = definition
 
     def schema(self, schema):
         """
-        A decorator to validate a request using a `JSON schema`_.
+        A decorator to validate a request using a :swagger:`schema`.
 
         Args:
-            schema (dict|str): Either a dict to use as a schema directly
-                or a named schema. (See `add_definition`.)
+            schema: Either a :class:`dict` to use as a schema directly
+                or a `str` referring to a named schema. (See
+                `add_definition`.)
 
         """
         def wrapper(fn):
@@ -264,7 +304,8 @@ class OpenAPI:
         """
         Mark a function as a getter function to get a validator.
 
-        The function will be called with the JSON schema as a `dict`.
+        The function will be called with the JSON schema as a
+        :class:`dict`.
 
         """
         self._validatorgetter = fn
