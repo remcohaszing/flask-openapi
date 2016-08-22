@@ -65,6 +65,7 @@ _DEFAULT_CONFIG = {
     'OPENAPI_INFO_VERSION': None,
     'OPENAPI_SHOW_HOST': False,
     'OPENAPI_SWAGGER_JSON_URL': '/swagger.json',
+    'OPENAPI_SWAGGER_YAML_URL': '/swagger.yaml',
     'OPENAPI_WARN_DEPRECATED': 'warn'
 }
 
@@ -88,21 +89,33 @@ class OpenAPI:
             app.config.setdefault(key, value)
 
         swagger_json_url = self._config('swagger_json_url')
+        swagger_yaml_url = self._config('swagger_yaml_url')
 
         @self.response(OK, {
             'description': 'This OpenAPI specification document.'
         })
-        @functools.wraps(self.swagger_handler)
-        def handler():
-            return self.swagger_handler()
-        app.add_url_rule(swagger_json_url, 'swagger', handler)
+        @app.route(swagger_json_url)
+        def json_handler():
+            """
+            Get the `swagger` object in JSON format.
 
-    def swagger_handler(self):
-        """
-        Get `swagger` as a JSON response.
+            """
+            return jsonify(self.swagger)
 
-        """
-        return jsonify(self.swagger)
+        @self.response(OK, {
+            'description': 'This OpenAPI specification document.'
+        })
+        @app.route(swagger_yaml_url)
+        def yaml_handler():
+            """
+            Get the `swagger` object in YAML format.
+
+            """
+            # YAML doesn't have an official mime type yet.
+            # https://www.ietf.org/mail-archive/web/media-types/current/msg00688.html
+            return yaml.dump(self.swagger, default_flow_style=False), {
+                'Content-Type': 'application/yaml'
+            }
 
     @property
     def swagger(self):

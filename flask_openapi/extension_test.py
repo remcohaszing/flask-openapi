@@ -29,7 +29,7 @@ def app(request):
     return app
 
 
-def test_swagger_handler(app, client):
+def test_swagger_json_handler(app, client):
     """
     Test if the handler returns the swagger dict as a JSON response.
 
@@ -38,6 +38,17 @@ def test_swagger_handler(app, client):
     response = client.get('/swagger.json')
     assert response.content_type == 'application/json'
     assert response.json == openapi.swagger
+
+
+def test_swagger_json_handler(app, client):
+    """
+    Test if the handler returns the swagger dict as a JSON response.
+
+    """
+    openapi = OpenAPI(app)
+    response = client.get('/swagger.yaml')
+    assert response.content_type == 'application/yaml'
+    assert yaml.load(response.data) == openapi.swagger
 
 
 def test_swagger_minimal(app):
@@ -322,14 +333,10 @@ def test_paths(app):
             ]
         },
         '/swagger.json': {
-            'get': {
-                'description': 'Get `swagger` as a JSON response.',
-                'responses': {
-                    '200': {
-                        'description': 'This OpenAPI specification document.'
-                    }
-                }
-            }
+            'get': ANY
+        },
+        '/swagger.yaml': {
+            'get': ANY
         }
     }
 
