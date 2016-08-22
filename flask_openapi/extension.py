@@ -213,6 +213,8 @@ class OpenAPI:
         """
         paths = {}
         for rule in self.app.url_map.iter_rules():
+            if rule.endpoint == 'static':
+                continue
             log.info('Processing %r', rule)
             url, parameters = parse_werkzeug_url(rule.rule)
             paths.setdefault(url, {})

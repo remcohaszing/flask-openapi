@@ -319,19 +319,6 @@ def test_paths(app):
                 'tags': ['pokemon', 'update']
             }
         },
-        '/static/{filename}': {
-            'get': {
-                'description': ANY
-            },
-            'parameters': [
-                {
-                    'in': 'path',
-                    'name': 'filename',
-                    'required': True,
-                    'type': 'string'
-                }
-            ]
-        },
         '/swagger.json': {
             'get': ANY
         },
