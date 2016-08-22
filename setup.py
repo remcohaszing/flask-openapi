@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='Flask-OpenAPI',
-    version='0.0.1',
+    version='0.1.0.alpha0',
     author='Remco Haszing',
     author_email='remcohaszing@gmail.com',
     packages=find_packages(),
