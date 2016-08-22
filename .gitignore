@@ -10,7 +10,8 @@ __pycache__/
 # Tox
 /.tox/
 
-# Pytest
+# Pytest / coverage
+/.coverage
 .cache/
 
 # Sphinx
