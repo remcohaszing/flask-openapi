@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from glob import glob
+from http.client import OK
 
+import yaml
 from flask import Flask
 from flask import jsonify
 from flask import request
@@ -14,8 +16,12 @@ app.config.update(
 )
 openapi = OpenAPI(app)
 
-for filename in glob('*.schema.yaml'):
+for filename in glob('definitions/*.schema.yaml'):
     openapi.add_definition(filename)
+
+
+with open('responses/beverage.response.yaml') as f:
+    openapi.add_response('Beverage', yaml.load(f))
 
 
 beverages = []
@@ -24,6 +30,7 @@ beverages = []
 @app.route('/beer', methods=['POST'])
 @openapi.deprecated
 @openapi.schema('Beer')
+@openapi.response(OK, 'Beverage')
 def create_beer():
     """
     Create a new beer object.
@@ -37,6 +44,7 @@ def create_beer():
 
 @app.route('/beverage', methods=['POST'])
 @openapi.schema('Beverage')
+@openapi.response(OK, 'Beverage')
 def create_beverage():
     """
     Create a new beverage.
@@ -47,6 +55,7 @@ def create_beverage():
 
 @app.route('/beverage')
 @openapi.schema('Beverage')
+@openapi.response(OK, {'description': 'List of beverages'})
 def list_beverages():
     """
     Get an array of all beverages.

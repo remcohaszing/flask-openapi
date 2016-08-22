@@ -103,3 +103,7 @@ def parse_contact_string(string):
         add_optional(result, 'email', match.group('email'))
         add_optional(result, 'url', match.group('url'))
     return result
+
+
+def ref(*args):
+    return {'$ref': '/'.join(['#', *args])}

@@ -2,6 +2,7 @@
 Tests for `flask_openapi`.
 
 """
+from http.client import ACCEPTED
 from pathlib import Path
 from unittest.mock import ANY
 from unittest.mock import call
@@ -266,11 +267,6 @@ def test_paths(app):
     assert openapi.paths == {
         '/pokemon': {
             'get': {
-                'responses': {
-                    '200': {
-                        'description': 'OK'
-                    }
-                },
                 'tags': ['pokemon', 'query']
             },
             'post': {
@@ -283,22 +279,12 @@ def test_paths(app):
                         }
                     }
                 ],
-                'responses': {
-                    '200': {
-                        'description': 'OK'
-                    }
-                },
                 'tags': ['create', 'pokemon']
             }
         },
         '/pokemon/{id}': {
             'get': {
                 'deprecated': True,
-                'responses': {
-                    '200': {
-                        'description': 'OK'
-                    }
-                },
                 'tags': ['get', 'pokemon']
             },
             'parameters': [
@@ -319,22 +305,12 @@ def test_paths(app):
                         }
                     }
                 ],
-                'responses': {
-                    '200': {
-                        'description': 'OK'
-                    }
-                },
                 'tags': ['pokemon', 'update']
             }
         },
         '/static/{filename}': {
             'get': {
-                'description': ANY,
-                'responses': {
-                    '200': {
-                        'description': 'OK'
-                    }
-                }
+                'description': ANY
             },
             'parameters': [
                 {
@@ -347,10 +323,10 @@ def test_paths(app):
         },
         '/swagger.json': {
             'get': {
-                'description': 'Get `swagger.json` as a JSON response.',
+                'description': 'Get `swagger` as a JSON response.',
                 'responses': {
                     '200': {
-                        'description': 'OK'
+                        'description': 'This OpenAPI specification document.'
                     }
                 }
             }
@@ -382,6 +358,15 @@ def test_no_definitions():
     """
     openapi = OpenAPI()
     assert openapi.definitions is None
+
+
+def test_no_responses():
+    """
+    Test if an empty responses object results in None.
+
+    """
+    openapi = OpenAPI()
+    assert openapi.responses is None
 
 
 def test_add_definition_explicit_title():
@@ -587,3 +572,38 @@ def test_deprecated_log(app, client, mocker):
         'Called deprecated %s %s',
         'GET',
         'http://localhost/')
+
+
+def test_response():
+    """
+    Test if an added response is added to the handler responses object.
+
+    """
+    openapi = OpenAPI()
+
+    @openapi.response(ACCEPTED, {
+        'description': ''
+    })
+    @openapi.response(204, 'NoContent')
+    def handler():
+        ...
+    assert handler.responses == {
+        '202': {'description': ''},
+        '204': {'$ref': '#/responses/NoContent'}
+    }
+
+
+def test_add_response():
+    """
+    Test if this adds a response to the responses object.
+
+    """
+    openapi = OpenAPI()
+    openapi.add_response('NotFound', {
+        'description': 'Returned if something could not be found.'
+    })
+    assert openapi.responses == {
+        'NotFound': {
+            'description': 'Returned if something could not be found.'
+        }
+    }

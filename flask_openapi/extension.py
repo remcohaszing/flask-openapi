@@ -7,6 +7,8 @@ import inspect
 import logging
 import warnings
 from contextlib import suppress
+from http import HTTPStatus
+from http.client import OK
 from pathlib import Path
 
 import yaml
@@ -16,6 +18,7 @@ from flask import request
 from flask_openapi.utils import add_optional
 from flask_openapi.utils import parse_contact_string
 from flask_openapi.utils import parse_werkzeug_url
+from flask_openapi.utils import ref
 from flask_openapi.validators import OpenAPISchemaValidator
 
 
@@ -73,6 +76,7 @@ class OpenAPI:
     """
     def __init__(self, app=None):
         self._definitions = {}
+        self._responses = {}
         self._tags = {}
         self._validatorgetter = OpenAPISchemaValidator
         if app:
@@ -84,7 +88,14 @@ class OpenAPI:
             app.config.setdefault(key, value)
 
         swagger_json_url = self._config('swagger_json_url')
-        app.add_url_rule(swagger_json_url, 'swagger', self.swagger_handler)
+
+        @self.response(OK, {
+            'description': 'This OpenAPI specification document.'
+        })
+        @functools.wraps(self.swagger_handler)
+        def handler():
+            return self.swagger_handler()
+        app.add_url_rule(swagger_json_url, 'swagger', handler)
 
     def swagger_handler(self):
         """
@@ -109,6 +120,7 @@ class OpenAPI:
         add_optional(data, 'schemes', self.schemes)
         add_optional(data, 'paths', self.paths)
         add_optional(data, 'definitions', self.definitions)
+        add_optional(data, 'responses', self.responses)
         add_optional(data, 'tags', self.tags)
         return data
 
@@ -209,6 +221,15 @@ class OpenAPI:
         if self._definitions:
             return self._definitions
 
+    @property
+    def responses(self):
+        """
+        :class:`dict`: The top level :swagger:`responses`.
+
+        """
+        if self._responses:
+            return self._responses
+
     def add_definition(self, definition, name=None):
         """
         Add a new named definition.
@@ -225,7 +246,7 @@ class OpenAPI:
             with open(str(definition)) as f:
                 definition = yaml.load(f)
         if not name:
-            name = definition.get('name')
+            name = definition.get('title')
         if not name:
             raise UnnamedDefinitionError(definition)
         self._definitions[name] = definition
@@ -300,6 +321,22 @@ class OpenAPI:
             return fn(*args, **kwargs)
         return call_deprecated
 
+    def response(self, status_code, response):
+        if isinstance(response, str):
+            response = ref('responses', response)
+        if isinstance(status_code, HTTPStatus):
+            status_code = int(status_code)
+
+        def attach_response(fn):
+            if not hasattr(fn, 'responses'):
+                fn.responses = {}
+            fn.responses[str(status_code)] = response
+            return fn
+        return attach_response
+
+    def add_response(self, name, response):
+        self._responses[name] = response
+
     def validatorgetter(self, fn):
         """
         Mark a function as a getter function to get a validator.
@@ -315,13 +352,7 @@ class OpenAPI:
         return self.app.config.get('OPENAPI_' + name.upper())
 
     def _process_rule(self, rule):
-        path = {
-            'responses': {
-                '200': {
-                    'description': 'OK'
-                }
-            }
-        }
+        path = {}
         view_func = self.app.view_functions[rule.endpoint]
         schema = self._extract_schema(view_func)
         if schema:
@@ -330,6 +361,8 @@ class OpenAPI:
                 'name': 'payload',
                 'schema': schema
             }]
+        with suppress(AttributeError):
+            path['responses'] = view_func.responses
         add_optional(path, 'description', self._extract_description(view_func))
         add_optional(
             path,
@@ -347,7 +380,7 @@ class OpenAPI:
         if isinstance(schema, dict):
             return schema
         if schema in self._definitions:
-            return {'$ref': '#/definitions/' + schema}
+            return ref('definitions', schema)
         raise UnknownDefinitionError(schema)
 
     def _extract_description(self, view_func):

@@ -99,3 +99,14 @@ def test_parse_contact_string(input, expected):
     """
     result = utils.parse_contact_string(input)
     assert result == expected
+
+
+def test_ref():
+    """
+    Test if args are converted to a JSON reference.
+
+    """
+    result = utils.ref('galaxy', 'milkyWay', 'sun', 'earth')
+    assert result == {
+        '$ref': '#/galaxy/milkyWay/sun/earth'
+    }
