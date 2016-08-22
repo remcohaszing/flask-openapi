@@ -14,6 +14,7 @@ setup(
     author_email='remcohaszing@gmail.com',
     description='Generate a swagger.json handler from a Flask app',
     long_description=readme,
+    license='MIT',
     packages=find_packages(),
     install_requires=[
         'flask ~= 0.11.0',
