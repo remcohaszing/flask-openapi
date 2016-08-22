@@ -2,7 +2,7 @@
 This module contains the `OpenAPISchemaValidator`.
 
 The `OpenAPISchemaValidator` extends the `jsonschema.Draft4Validator`
-with the functionalities as described in XXX.
+with the functionalities as described in :swagger:`schema`.
 
 """
 from jsonschema import Draft4Validator
