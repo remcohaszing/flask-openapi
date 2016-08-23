@@ -13,7 +13,7 @@ with open('README.rst') as f:
 
 setup(
     name='Flask-OpenAPI',
-    version='0.1.0.alpha0',
+    version='0.1.0a1',
     author='Remco Haszing',
     author_email='remcohaszing@gmail.com',
     description='Generate a swagger.json handler from a Flask app',
