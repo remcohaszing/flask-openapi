@@ -18,6 +18,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'flask ~= 0.11.0',
-        'jsonschema ~= 2.5.1'
+        'jsonschema ~= 2.5.1',
+        'pyyaml ~= 3.11'
     ],
     zip_safe=True)
