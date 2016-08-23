@@ -40,7 +40,7 @@ def test_swagger_json_handler(app, client):
     assert response.json == openapi.swagger
 
 
-def test_swagger_json_handler(app, client):
+def test_swagger_yaml_handler(app, client):
     """
     Test if the handler returns the swagger dict as a JSON response.
 
