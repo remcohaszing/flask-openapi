@@ -1,5 +1,5 @@
 """
-
+This module contains the actual Flask extension.
 
 """
 import functools
@@ -32,8 +32,11 @@ class UnnamedDefinitionError(Exception):
     """
     Raised when trying to add a definition which has no title.
 
+    Args:
+        definition (dict): The unnamed JSON schema definition.
+
     """
-    def __init__(self, definition):
+    def __init__(self, definition):  # noqa: D102
         self.definition = definition
 
     def __str__(self):
@@ -44,8 +47,11 @@ class UnknownDefinitionError(Exception):
     """
     Raised when trying to get a definition which doesn't exist.
 
+    Args:
+        name (str): The definition that could not be found.
+
     """
-    def __init__(self, name):
+    def __init__(self, name):  # noqa: D102
         self.name = name
 
     def __str__(self):
@@ -74,8 +80,11 @@ class OpenAPI:
     """
     The Flask extension that handles all magic.
 
+    Args:
+        app (flask.Flask): The Flask app to apply this extension to.
+
     """
-    def __init__(self, app=None):
+    def __init__(self, app=None):  # noqa: D102
         self._definitions = {}
         self._responses = {}
         self._tags = {}
@@ -84,6 +93,16 @@ class OpenAPI:
             self.init_app(app)
 
     def init_app(self, app):
+        """
+        Initialize the OpenAPI instance for the given app.
+
+        This should be used for a deferred initialization, supporting
+        the Flask factory pattern.
+
+        Args:
+            app (flask.Flask): The Flask app to apply this extension to.
+
+        """
         self.app = app
         for key, value in _DEFAULT_CONFIG.items():
             app.config.setdefault(key, value)
@@ -120,7 +139,7 @@ class OpenAPI:
     @property
     def swagger(self):
         """
-        The top level :swagger:`swagger`.
+        :class:`dict`: The top level :swagger:`swaggerObject`.
 
         """
         data = {
@@ -140,7 +159,7 @@ class OpenAPI:
     @property
     def info(self):
         """
-        The top level :swagger:`info`.
+        :class:`dict`: The top level :swagger:`infoObject`.
 
         """
         data = {
@@ -166,7 +185,7 @@ class OpenAPI:
 
         This is only returned if ``show_host`` is `True`.
 
-        See :swagger:`swagger` for details.
+        See :swagger:`swaggerHost` for details.
 
         """
         if self._config('show_host'):
@@ -177,7 +196,7 @@ class OpenAPI:
         """
         `str`: The relative URL prefix for all API calls.
 
-        See :swagger:`basePath` for details.
+        See :swagger:`swaggerBasePath` for details.
 
         """
         return self._config('base_path')
@@ -187,7 +206,7 @@ class OpenAPI:
         """
         `list`: The supported schemes for all API calls.
 
-        See :swagger:`schemes` for details.
+        See :swagger:`swaggerSchemes` for details.
 
         """
         scheme = self.app.config.get('PREFERRED_URL_SCHEME')
@@ -199,7 +218,7 @@ class OpenAPI:
         """
         :class:`dict`: A list of tag descriptions.
 
-        See :swagger:`tag`.
+        See :swagger:`tagObject`.
 
         """
         if self._tags:
@@ -208,7 +227,7 @@ class OpenAPI:
     @property
     def paths(self):
         """
-        :class:`dict`: The top level :swagger:`paths`.
+        :class:`dict`: The top level :swagger:`pathsObject`.
 
         """
         paths = {}
@@ -230,7 +249,7 @@ class OpenAPI:
     @property
     def definitions(self):
         """
-        :class:`dict`: The top level :swagger:`definitions`.
+        :class:`dict`: The top level :swagger:`definitionsObject`.
 
         """
         if self._definitions:
@@ -239,7 +258,7 @@ class OpenAPI:
     @property
     def responses(self):
         """
-        :class:`dict`: The top level :swagger:`responses`.
+        :class:`dict`: The top level :swagger:`responsesObject`.
 
         """
         if self._responses:
@@ -250,7 +269,7 @@ class OpenAPI:
         Add a new named definition.
 
         Args:
-            definition: A :class:`dict` describing a :swagger:`schema`.
+            definition: A :class:`dict` describing a :swagger:`schemaObject`.
                 This may also be a `str` or `pathlib.Path` referring to
                 a file to read.
             name (str): A name for the schema. If this is not specified,
@@ -268,7 +287,7 @@ class OpenAPI:
 
     def schema(self, schema):
         """
-        A decorator to validate a request using a :swagger:`schema`.
+        A decorator to validate a request using a :swagger:`schemaObject`.
 
         Args:
             schema: Either a :class:`dict` to use as a schema directly
@@ -321,6 +340,8 @@ class OpenAPI:
         This can be configured using the ``OPENAPI_WARN_DEPRECATED``
         configuration option. This must be one of ``warn`` or ``log``.
 
+        See :swagger:`operationDeprecated`.
+
         """
         fn.deprecated = True
 
@@ -337,6 +358,20 @@ class OpenAPI:
         return call_deprecated
 
     def response(self, status_code, response):
+        """
+        Describe a possible response for a Flask handler.
+
+        Args:
+            status_code: The status code for which the response is
+                described. `str`, `int` or `http.HTTPStatus` are
+                accepted. The result will be exposed as a string. See
+                :swagger:`responsesCode`.
+            response: A description of the response object. This may be
+                a dict describing a response or a string referring to a
+                response added using `add_response`. See
+                :swagger:`responseObject`.
+
+        """
         if isinstance(response, str):
             response = ref('responses', response)
         if isinstance(status_code, HTTPStatus):
@@ -350,6 +385,15 @@ class OpenAPI:
         return attach_response
 
     def add_response(self, name, response):
+        """
+        Define a possible response to be reused accross operations.
+
+        Args:
+            name (str): The name of the response. See :swagger:`rdName`.
+            response (dict): The response to add. See
+                :swagger:`responseObject`.
+
+        """
         self._responses[name] = response
 
     def validatorgetter(self, fn):

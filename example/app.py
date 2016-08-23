@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+This example app demonstrates how to use Flask-OpenAPI.
+
+"""
 from glob import glob
 from http.client import OK
 

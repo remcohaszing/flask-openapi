@@ -6,7 +6,7 @@ This module defines several common constants.
 #:
 #: Each HTTP status code has its own constant in `http.client`.
 #:
-#: From :swagger:`responses`:
+#: From :swagger:`responsesObject`:
 #:
 #: | The default can be used as the default response object for all HTTP
 #:   codes that are not covered individually by the specification.

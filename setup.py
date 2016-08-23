@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+The setup script for Flask-OpenAPI.
+
+"""
 from setuptools import find_packages
 from setuptools import setup
 

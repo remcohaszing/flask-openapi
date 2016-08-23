@@ -1,3 +1,11 @@
+"""
+This module contains some utility functions.
+
+.. testsetup::
+
+    from flask_openapi.utils import *
+
+"""
 import re
 
 from werkzeug.routing import parse_rule
@@ -89,6 +97,15 @@ def parse_contact_string(string):
 
     *email* and *url* are optional.
 
+    Example:
+
+    >>> r = parse_contact_string('Me <me@example.com> (http://example.com/me)')
+    >>> assert r == {
+    ...     'name': 'Me',
+    ...     'email': 'me@example.com',
+    ...     'url': 'http://example.com/me'
+    ... }
+
     Args:
         string (str): The string to extract the contact information from.
 
@@ -106,4 +123,17 @@ def parse_contact_string(string):
 
 
 def ref(*args):
+    """
+    Turn a number of arguments to a JSON reference.
+
+    >>> ref('definitions', 'MySchema')
+    {'$ref': '#/definitions/MySchema'}
+
+    Args:
+        args (str): The reference path.
+
+    Returns:
+        :class:`dict`: A JSON reference to the input path.
+
+    """
     return {'$ref': '/'.join(['#', *args])}

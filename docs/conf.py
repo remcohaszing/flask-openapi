@@ -1,7 +1,12 @@
+"""
+Setup the Sphinx configuration options.
+
+"""
 project = 'Flask-OpenAPI'
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
@@ -18,7 +23,7 @@ nitpick_ignore = [
 ]
 
 extlinks = dict(
-    swagger=('http://swagger.io/specification/#%sObject', 'Swagger ')
+    swagger=('http://swagger.io/specification/#%s', 'Swagger ')
 )
 
 intersphinx_mapping = dict(
