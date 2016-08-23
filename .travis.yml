@@ -1,5 +1,13 @@
 language: python
 python:
-  - '3.5'
+- '3.5'
 install: pip install tox
 script: tox
+deploy:
+  provider: pypi
+  user: remcohaszing
+  password:
+    secure: udWef3hxa8Bx6GRMdtH5RdW/BekrSEdtwILTd8nvM9Vu5CADWDDkiwAW3luECt4XC11nHY1XvTnqhWgl+ACST/z/jfq0mKTTigZ6ymPZLZMYb5sH/kbTrFfqRRV2SQJzmiHiVrwqLOOvkbz8Rcw4ipHHCKWaZa+FfeL5FxMiagVZM4O8V5XwuIApBOJ/HIkKbpXBfSzpot3nmrWM+CUWKoh0W046W61dE1RUO4TYCjrvrTsWhHawMHYhmBlyglSlKrmx0RO/0lvxRLZsQNmkvLQ4/LYY4vbQxL+TDq9TdC4RUiUlGILMpbmvsj1hT/1ypuBatcSZmqE0Py9RuJnzNq7WoGI2Yux0lPriMaR+KmNVDZDASbwkswwJ5D1SdhAUGumzL7hgrQyM6qFfF8iBSYewIVNYoggIpWA03XG2LH3nimA58/C1cC6eN2WhjKGgQ1jtMxYN1PWGABsNbGB3cy2NsCTVaYARGomoYm36Mis7YdrnfOY+zZkRpz5YJMvBtRPQuWRwecTKQf4NVdm0ezYaRNxkkDsFA+khNnsNzTkyzc4wW2PR7deodyllCAO6/crZ0O6djinXK6RJa8fxZlN9C0rta1xptVRyUF7TRnzf4mxR1V0QEEDVsQIAX64hZ2cpYzSzE+DlVVznf1LnJi0K/Npz57Jp0uwQTNdwfxk=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
